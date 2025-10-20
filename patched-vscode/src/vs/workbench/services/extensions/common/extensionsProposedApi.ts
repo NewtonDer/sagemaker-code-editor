@@ -37,7 +37,7 @@ export class ExtensionsProposedApi {
 			for (const [k, value] of Object.entries(productService.extensionEnabledApiProposals)) {
 				const key = ExtensionIdentifier.toKey(k);
 				const proposalNames = value.filter(name => {
-					if (!allApiProposals[<ApiProposalName>name]) {
+					if (!allApiProposals[<ApiProposalName>name] && name !== 'embedded') {
 						_logService.warn(`Via 'product.json#extensionEnabledApiProposals' extension '${key}' wants API proposal '${name}' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.`);
 						return false;
 					}
@@ -64,7 +64,7 @@ export class ExtensionsProposedApi {
 		// warn about invalid proposal and remove them from the list
 		if (isNonEmptyArray(extension.enabledApiProposals)) {
 			extension.enabledApiProposals = extension.enabledApiProposals.filter(name => {
-				const result = Boolean(allApiProposals[<ApiProposalName>name]);
+				const result = Boolean(allApiProposals[<ApiProposalName>name]) || name === 'embedded';
 				if (!result) {
 					this._logService.error(`Extension '${key}' wants API proposal '${name}' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.`);
 				}
@@ -103,7 +103,7 @@ export class ExtensionsProposedApi {
 			return;
 		}
 
-		if (!extension.isBuiltin && isNonEmptyArray(extension.enabledApiProposals)) {
+		if ((!extension.isBuiltin && extension.id !== 'amazonwebservices.aws-toolkit-vscode') && isNonEmptyArray(extension.enabledApiProposals)) {
 			// restrictive: extension cannot use proposed API in this context and its declaration is nulled
 			this._logService.error(`Extension '${extension.identifier.value} CANNOT USE these API proposals '${extension.enabledApiProposals?.join(', ') || '*'}'. You MUST start in extension development mode or use the --enable-proposed-api command line flag`);
 			extension.enabledApiProposals = [];

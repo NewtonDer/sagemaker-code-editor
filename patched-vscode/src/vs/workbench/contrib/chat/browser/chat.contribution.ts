@@ -16,25 +16,15 @@ import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { Registry } from 'vs/platform/registry/common/platform';
 import { EditorPaneDescriptor, IEditorPaneRegistry } from 'vs/workbench/browser/editor';
-import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions, WorkbenchPhase, registerWorkbenchContribution2 } from 'vs/workbench/common/contributions';
-import { EditorExtensions, IEditorFactoryRegistry } from 'vs/workbench/common/editor';
+import { EditorExtensions } from 'vs/workbench/common/editor';
 import { ChatAccessibilityHelp } from 'vs/workbench/contrib/chat/browser/actions/chatAccessibilityHelp';
-import { registerChatActions } from 'vs/workbench/contrib/chat/browser/actions/chatActions';
-import { ACTION_ID_NEW_CHAT, registerNewChatActions } from 'vs/workbench/contrib/chat/browser/actions/chatClearActions';
-import { registerChatCodeBlockActions, registerChatCodeCompareBlockActions } from 'vs/workbench/contrib/chat/browser/actions/chatCodeblockActions';
-import { registerChatCopyActions } from 'vs/workbench/contrib/chat/browser/actions/chatCopyActions';
-import { SubmitAction, registerChatExecuteActions } from 'vs/workbench/contrib/chat/browser/actions/chatExecuteActions';
-import { registerChatFileTreeActions } from 'vs/workbench/contrib/chat/browser/actions/chatFileTreeActions';
-import { registerChatExportActions } from 'vs/workbench/contrib/chat/browser/actions/chatImportExport';
-import { registerMoveActions } from 'vs/workbench/contrib/chat/browser/actions/chatMoveActions';
-import { registerQuickChatActions } from 'vs/workbench/contrib/chat/browser/actions/chatQuickInputActions';
-import { registerChatTitleActions } from 'vs/workbench/contrib/chat/browser/actions/chatTitleActions';
+import { ACTION_ID_NEW_CHAT } from 'vs/workbench/contrib/chat/browser/actions/chatClearActions';
+import { SubmitAction } from 'vs/workbench/contrib/chat/browser/actions/chatExecuteActions';
 import { IChatAccessibilityService, IChatCodeBlockContextProviderService, IChatWidgetService, IQuickChatService } from 'vs/workbench/contrib/chat/browser/chat';
 import { ChatAccessibilityService } from 'vs/workbench/contrib/chat/browser/chatAccessibilityService';
 import { ChatEditor, IChatEditorOptions } from 'vs/workbench/contrib/chat/browser/chatEditor';
-import { ChatEditorInput, ChatEditorInputSerializer } from 'vs/workbench/contrib/chat/browser/chatEditorInput';
+import { ChatEditorInput } from 'vs/workbench/contrib/chat/browser/chatEditorInput';
 import { agentSlashCommandToMarkdown, agentToMarkdown } from 'vs/workbench/contrib/chat/browser/chatMarkdownDecorationsRenderer';
-import { ChatExtensionPointHandler } from 'vs/workbench/contrib/chat/browser/chatParticipantContributions';
 import { QuickChatService } from 'vs/workbench/contrib/chat/browser/chatQuick';
 import { ChatResponseAccessibleView } from 'vs/workbench/contrib/chat/browser/chatResponseAccessibleView';
 import { ChatVariablesService } from 'vs/workbench/contrib/chat/browser/chatVariables';
@@ -54,9 +44,7 @@ import { ILanguageModelsService, LanguageModelsService } from 'vs/workbench/cont
 import { ILanguageModelStatsService, LanguageModelStatsService } from 'vs/workbench/contrib/chat/common/languageModelStats';
 import { IVoiceChatService, VoiceChatService } from 'vs/workbench/contrib/chat/common/voiceChatService';
 import { IEditorResolverService, RegisteredEditorPriority } from 'vs/workbench/services/editor/common/editorResolverService';
-import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle';
 import '../common/chatColors';
-import { registerChatContextActions } from 'vs/workbench/contrib/chat/browser/actions/chatContextActions';
 
 // Register configuration
 const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration);
@@ -230,25 +218,6 @@ class ChatSlashStaticSlashCommandsContribution extends Disposable {
 		}));
 	}
 }
-
-const workbenchContributionsRegistry = Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
-registerWorkbenchContribution2(ChatResolverContribution.ID, ChatResolverContribution, WorkbenchPhase.BlockStartup);
-workbenchContributionsRegistry.registerWorkbenchContribution(ChatSlashStaticSlashCommandsContribution, LifecyclePhase.Eventually);
-Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerEditorSerializer(ChatEditorInput.TypeID, ChatEditorInputSerializer);
-registerWorkbenchContribution2(ChatExtensionPointHandler.ID, ChatExtensionPointHandler, WorkbenchPhase.BlockStartup);
-
-registerChatActions();
-registerChatCopyActions();
-registerChatCodeBlockActions();
-registerChatCodeCompareBlockActions();
-registerChatFileTreeActions();
-registerChatTitleActions();
-registerChatExecuteActions();
-registerQuickChatActions();
-registerChatExportActions();
-registerMoveActions();
-registerNewChatActions();
-registerChatContextActions();
 
 registerSingleton(IChatService, ChatService, InstantiationType.Delayed);
 registerSingleton(IChatWidgetService, ChatWidgetService, InstantiationType.Delayed);

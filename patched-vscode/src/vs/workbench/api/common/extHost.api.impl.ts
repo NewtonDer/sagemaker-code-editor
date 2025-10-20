@@ -673,6 +673,14 @@ export function createApiFactoryAndRegisterActors(accessor: ServicesAccessor): I
 
 		// namespace: window
 		const window: typeof vscode.window = {
+			receiveMessage(listener, thisArg?, disposables?) {
+				checkProposedApiEnabled(extension, 'embedded' as any);
+				return _asExtensionEvent(extHostWindow.receiveMessage)(listener, thisArg, disposables);
+			},
+			sendMessage(message: any) {
+				checkProposedApiEnabled(extension, 'embedded' as any);
+				extHostWindow.sendMessage(message);
+			},
 			get activeTextEditor() {
 				return extHostEditors.getActiveTextEditor();
 			},

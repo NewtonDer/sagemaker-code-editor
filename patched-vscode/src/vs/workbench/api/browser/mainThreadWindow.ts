@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { mainWindow } from 'vs/base/browser/window';
 import { Event } from 'vs/base/common/event';
 import { DisposableStore } from 'vs/base/common/lifecycle';
 import { URI, UriComponents } from 'vs/base/common/uri';
@@ -29,10 +30,36 @@ export class MainThreadWindow implements MainThreadWindowShape {
 		Event.latch(hostService.onDidChangeFocus)
 			(this.proxy.$onDidChangeWindowFocus, this.proxy, this.disposables);
 		userActivityService.onDidChangeIsActive(this.proxy.$onDidChangeWindowActive, this.proxy, this.disposables);
+
+		mainWindow.addEventListener('message', (e) => {
+			if (e.origin !== this.getOrigin() || e.source !== mainWindow.parent) {
+				return;
+			}
+			this.proxy.$receiveMessage(e.data);
+		})
+	}
+
+	private getOrigin() {
+		console.log('mainWindow: ', mainWindow.location.search);
+		return /origin=([^&?#=]+)|$/.exec(mainWindow.location.search)?.[1];
 	}
 
 	dispose(): void {
 		this.disposables.dispose();
+	}
+
+	$sendMessage(message: any): void {
+		const origin = this.getOrigin();
+		console.log('origin: ', origin);
+
+		if (!origin) {
+			return;
+		}
+
+		console.log('postMessage: ', message);
+		console.log('postMessage origin: ', origin);
+
+		mainWindow.parent.postMessage(message, origin);
 	}
 
 	$getInitialState() {

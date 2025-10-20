@@ -22,6 +22,7 @@ export class ExtHostWindow implements ExtHostWindowShape {
 	private _proxy: MainThreadWindowShape;
 
 	private readonly _onDidChangeWindowState = new Emitter<WindowState>();
+	private _receiveMessage: Emitter<any>;
 	readonly onDidChangeWindowState: Event<WindowState> = this._onDidChangeWindowState.event;
 
 	private _state = ExtHostWindow.InitialState;
@@ -46,6 +47,19 @@ export class ExtHostWindow implements ExtHostWindowShape {
 			this.onDidChangeWindowProperty('focused', isFocused);
 			this.onDidChangeWindowProperty('active', isActive);
 		});
+		this._receiveMessage = new Emitter<any>();
+	}
+
+	$receiveMessage(message: any): void {
+		this._receiveMessage.fire(message);
+	}
+
+	public get receiveMessage(): Event<any> {
+		return this._receiveMessage.event;
+	}
+
+	sendMessage(message: any): void {
+		this._proxy.$sendMessage(message);
 	}
 
 	$onDidChangeWindowFocus(value: boolean) {
