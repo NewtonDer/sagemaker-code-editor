@@ -18,6 +18,7 @@ export class MainThreadWindow implements MainThreadWindowShape {
 
 	private readonly proxy: ExtHostWindowShape;
 	private readonly disposables = new DisposableStore();
+	private readonly _receiveMessageListener: (e: MessageEvent<any>) => void;
 
 	constructor(
 		extHostContext: IExtHostContext,
@@ -31,33 +32,32 @@ export class MainThreadWindow implements MainThreadWindowShape {
 			(this.proxy.$onDidChangeWindowFocus, this.proxy, this.disposables);
 		userActivityService.onDidChangeIsActive(this.proxy.$onDidChangeWindowActive, this.proxy, this.disposables);
 
-		mainWindow.addEventListener('message', (e) => {
+		this._receiveMessageListener = (e: MessageEvent<any>) => {
 			if (e.origin !== this.getOrigin() || e.source !== mainWindow.parent) {
 				return;
 			}
 			this.proxy.$receiveMessage(e.data);
-		})
+		};
+
+		mainWindow.addEventListener('message', this._receiveMessageListener);
 	}
 
 	private getOrigin() {
-		console.log('mainWindow: ', mainWindow.location.search);
-		return /origin=([^&?#=]+)|$/.exec(mainWindow.location.search)?.[1];
+		const urlParams = new URLSearchParams(mainWindow.location.search);
+		return urlParams.get('origin');
 	}
 
 	dispose(): void {
 		this.disposables.dispose();
+		mainWindow.removeEventListener('message', this._receiveMessageListener);
 	}
 
 	$sendMessage(message: any): void {
 		const origin = this.getOrigin();
-		console.log('origin: ', origin);
 
 		if (!origin) {
 			return;
 		}
-
-		console.log('postMessage: ', message);
-		console.log('postMessage origin: ', origin);
 
 		mainWindow.parent.postMessage(message, origin);
 	}

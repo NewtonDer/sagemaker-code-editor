@@ -65,41 +65,11 @@ Index: sagemaker-code-editor/vscode/src/vs/code/browser/workbench/workbench.ts
  	}
  
  	private startListening(): void {
- @@ -550,17 +551,6 @@ class WorkspaceProvider implements IWork
-  	}
-  }
-
- -function readCookie(name: string): string | undefined {
- -	const cookies = document.cookie.split('; ');
- -	for (const cookie of cookies) {
- -		if (cookie.startsWith(name + '=')) {
- -			return cookie.substring(name.length + 1);
- -		}
- -	}
- -
- -	return undefined;
- -}
- -
-  (function () {
-
-  	// Find config by checking for DOM
- @@ -569,8 +559,8 @@ function readCookie(name: string): strin
-  	if (!configElement || !configElementAttribute) {
-  		throw new Error('Missing web configuration element');
-  	}
- -	const config: IWorkbenchConstructionOptions & { folderUri?: UriComponents; workspaceUri?: UriComponents; callbackRoute: string } = JSON.parse(configElementAttribute);
- -	const secretStorageKeyPath = readCookie('vscode-secret-key-path');
- +	const config: IWorkbenchConstructionOptions & { folderUri?: UriComponents; workspaceUri?: UriComponents; callbackRoute: string } = { ...JSON.parse(configElementAttribute), remoteAuthority: location.host }
- +	const secretStorageKeyPath = (window.location.pathname + "/mint-key").replace(/\/\/+/g, "/");
-  	const secretStorageCrypto = secretStorageKeyPath && ServerKeyedAESCrypto.supported()
-  		? new ServerKeyedAESCrypto(secretStorageKeyPath) : new TransparentCrypto();
-
-
 Index: sagemaker-code-editor/vscode/src/vs/platform/extensionResourceLoader/common/extensionResourceLoader.ts
 ===================================================================
 --- sagemaker-code-editor.orig/vscode/src/vs/platform/extensionResourceLoader/common/extensionResourceLoader.ts
 +++ sagemaker-code-editor/vscode/src/vs/platform/extensionResourceLoader/common/extensionResourceLoader.ts
-@@ -99,7 +98,7 @@ export abstract class AbstractExtensionR
+@@ -99,7 +99,7 @@ export abstract class AbstractExtensionR
  					: version,
  				path: 'extension'
  			}));
@@ -124,7 +94,7 @@ Index: sagemaker-code-editor/vscode/src/vs/server/node/webClientServer.ts
 ===================================================================
 --- sagemaker-code-editor.orig/vscode/src/vs/server/node/webClientServer.ts
 +++ sagemaker-code-editor/vscode/src/vs/server/node/webClientServer.ts
-@@ -278,7 +278,7 @@ export class WebClientServer {
+@@ -279,7 +279,7 @@ export class WebClientServer {
  		const remoteAuthority = (
  			useTestResolver
  				? 'test+test'
@@ -133,10 +103,10 @@ Index: sagemaker-code-editor/vscode/src/vs/server/node/webClientServer.ts
  		);
  		if (!remoteAuthority) {
  			return serveError(req, res, 400, `Bad request.`);
-@@ -305,7 +305,12 @@ export class WebClientServer {
+@@ -306,7 +306,12 @@ export class WebClientServer {
  			scopes: [['user:email'], ['repo']]
  		} : undefined;
-
+ 
 +		const basePath: string = this._environmentService.args['base-path'] || "/"
 +		const base = relativeRoot(basePath)
 +		const vscodeBase = relativePath(basePath)
@@ -146,7 +116,7 @@ Index: sagemaker-code-editor/vscode/src/vs/server/node/webClientServer.ts
  			embedderIdentifier: 'server-distro',
  			extensionsGallery: this._webExtensionResourceUrlTemplate && this._productService.extensionsGallery ? {
  				...this._productService.extensionsGallery,
-@@ -340,8 +345,10 @@ export class WebClientServer {
+@@ -342,8 +347,10 @@ export class WebClientServer {
  		const values: { [key: string]: string } = {
  			WORKBENCH_WEB_CONFIGURATION: asJSON(workbenchWebConfiguration),
  			WORKBENCH_AUTH_SESSION: authSessionInfo ? asJSON(authSessionInfo) : '',
@@ -159,7 +129,7 @@ Index: sagemaker-code-editor/vscode/src/vs/server/node/webClientServer.ts
  		};
  
  		if (useTestResolver) {
-@@ -443,3 +445,70 @@ export class WebClientServer {
+@@ -444,3 +451,70 @@ export class WebClientServer {
  		return void res.end(data);
  	}
  }
