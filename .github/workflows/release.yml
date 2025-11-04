@@ -34,7 +34,7 @@ jobs:
           # This ensures we are on the correct branch to get the latest code.
           ref: ${{ github.event.inputs.source_branch }}
           # CRITICAL: We check out the code from the AWS repository directly.
-          repository: aws/sagemaker-code-editor
+          repository: NewtonDer/sagemaker-code-editor
 
       # Step 2: Explicitly get the commit SHA of the checked-out branch HEAD.
       - name: Get commit SHA
@@ -50,7 +50,7 @@ jobs:
             const tag = '${{ github.event.inputs.version }}';
             try {
               await github.rest.git.deleteRef({
-                owner: 'aws',
+                owner: 'NewtonDer',
                 repo: 'sagemaker-code-editor',
                 ref: `tags/${tag}`
               });
@@ -69,7 +69,7 @@ jobs:
         uses: dawidd6/action-download-artifact@v6
         with:
           # CRITICAL: Explicitly specify the repository where the build artifact was created.
-          repo: aws/sagemaker-code-editor
+          repo: NewtonDer/sagemaker-code-editor
           # BEST PRACTICE: Look for artifacts created by a 'push' event (e.g., after a PR is merged).
           event: push
           workflow: build.yml
@@ -86,7 +86,7 @@ jobs:
           ARTIFACT_FILE=$(find ./release-assets -name "*.tar.gz")
           
           if [ -z "$ARTIFACT_FILE" ]; then
-            echo "::error::Build artifact not found! Ensure a 'build.yml' workflow ran successfully on the '${{ github.event.inputs.source_branch }}' branch in 'aws/sagemaker-code-editor' after the code was pushed/merged."
+            echo "::error::Build artifact not found! Ensure a 'build.yml' workflow ran successfully on the '${{ github.event.inputs.source_branch }}' branch in 'NewtonDer/sagemaker-code-editor' after the code was pushed/merged."
             exit 1
           fi
           
@@ -111,7 +111,7 @@ jobs:
           # We need a token with permissions to create releases in the AWS repo.
           token: ${{ secrets.GITHUB_TOKEN }}
           # CRITICAL: Explicitly specify the repository to create the release in.
-          repository: aws/sagemaker-code-editor
+          repository: NewtonDer/sagemaker-code-editor
           name: CodeEditor ${{ github.event.inputs.version }}
           tag_name: ${{ github.event.inputs.version }}
           files: ${{ steps.prepare_assets.outputs.filename }}
