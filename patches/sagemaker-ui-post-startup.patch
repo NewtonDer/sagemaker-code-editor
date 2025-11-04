@@ -47,7 +47,7 @@ Index: sagemaker-code-editor/vscode/src/vs/server/node/webClientServer.ts
  
  			return serveError(req, res, 404, 'Not found.');
  		} catch (error) {
-@@ -518,6 +528,41 @@ export class WebClientServer {
+@@ -519,6 +529,41 @@ export class WebClientServer {
  			serveError(req, res, 500, error.message)
  		}
  	}

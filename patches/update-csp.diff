@@ -2,8 +2,11 @@ Index: sagemaker-code-editor/vscode/src/vs/server/node/webClientServer.ts
 ===================================================================
 --- sagemaker-code-editor.orig/vscode/src/vs/server/node/webClientServer.ts
 +++ sagemaker-code-editor/vscode/src/vs/server/node/webClientServer.ts
-@@ -375,7 +375,7 @@ export class WebClientServer {
+@@ -373,9 +373,10 @@ export class WebClientServer {
+ 			`script-src 'self' 'unsafe-eval' ${this._getScriptCspHashes(data).join(' ')} '${webWorkerExtensionHostIframeScriptSHA}' ${useTestResolver ? '' : `http://${remoteAuthority}`};`, // the sha is the same as in src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html
+ 			'child-src \'self\';',
  			`frame-src 'self' https://*.vscode-cdn.net data:;`,
++			`frame-ancestors 'self' https://aileague.aws.dev https://beta.aileague.aws.dev;`,
  			'worker-src \'self\' data: blob:;',
  			'style-src \'self\' \'unsafe-inline\';',
 -			'connect-src \'self\' ws: wss: https:;',

@@ -1,0 +1,199 @@
+Add a bridge from the extension host to the grandparent window
+
+This allows an extension to do the following:
+
+  vscode.window.receiveMessage((message) => {
+    console.log('Got from embedding page:', message);
+  });
+  vscode.window.sendMessage('Hello from extension');
+
+Messages are sent over the extension host proxy to the main window,
+then over postMessage to its parent window (if any).
+
+To prevent any extension from using this functionality, the APIs are
+gated behind an "embedded" API proposal which can only be set in a
+global product.json like so:
+
+  {
+    "productConfiguration": {
+      "extensionEnabledApiProposals": {
+        "my-extension": ["embedded"]
+      }
+    }
+  }
+
+If the IDE is not being run in an embedded context, the APIs will do
+nothing, i.e. any messages sent are swallowed and no messages will be
+received.
+
+Index: sagemaker-code-editor/vscode/src/vs/workbench/api/browser/mainThreadWindow.ts
+===================================================================
+--- sagemaker-code-editor.orig/vscode/src/vs/workbench/api/browser/mainThreadWindow.ts
++++ sagemaker-code-editor/vscode/src/vs/workbench/api/browser/mainThreadWindow.ts
+@@ -3,6 +3,7 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
++import { mainWindow } from 'vs/base/browser/window';
+ import { Event } from 'vs/base/common/event';
+ import { DisposableStore } from 'vs/base/common/lifecycle';
+ import { URI, UriComponents } from 'vs/base/common/uri';
+@@ -17,6 +18,7 @@ export class MainThreadWindow implements
+ 
+ 	private readonly proxy: ExtHostWindowShape;
+ 	private readonly disposables = new DisposableStore();
++	private readonly _receiveMessageListener: (e: MessageEvent<any>) => void;
+ 
+ 	constructor(
+ 		extHostContext: IExtHostContext,
+@@ -29,10 +31,35 @@ export class MainThreadWindow implements
+ 		Event.latch(hostService.onDidChangeFocus)
+ 			(this.proxy.$onDidChangeWindowFocus, this.proxy, this.disposables);
+ 		userActivityService.onDidChangeIsActive(this.proxy.$onDidChangeWindowActive, this.proxy, this.disposables);
++
++		this._receiveMessageListener = (e: MessageEvent<any>) => {
++			if (e.origin !== this.getOrigin() || e.source !== mainWindow.parent) {
++				return;
++			}
++			this.proxy.$receiveMessage(e.data);
++		};
++
++		mainWindow.addEventListener('message', this._receiveMessageListener);
++	}
++
++	private getOrigin() {
++		const urlParams = new URLSearchParams(mainWindow.location.search);
++		return urlParams.get('origin');
+ 	}
+ 
+ 	dispose(): void {
+ 		this.disposables.dispose();
++		mainWindow.removeEventListener('message', this._receiveMessageListener);
++	}
++
++	$sendMessage(message: any): void {
++		const origin = this.getOrigin();
++
++		if (!origin) {
++			return;
++		}
++
++		mainWindow.parent.postMessage(message, origin);
+ 	}
+ 
+ 	$getInitialState() {
+Index: sagemaker-code-editor/vscode/src/vs/workbench/api/common/extHost.api.impl.ts
+===================================================================
+--- sagemaker-code-editor.orig/vscode/src/vs/workbench/api/common/extHost.api.impl.ts
++++ sagemaker-code-editor/vscode/src/vs/workbench/api/common/extHost.api.impl.ts
+@@ -673,6 +673,14 @@ export function createApiFactoryAndRegis
+ 
+ 		// namespace: window
+ 		const window: typeof vscode.window = {
++			receiveMessage(listener, thisArg?, disposables?) {
++				checkProposedApiEnabled(extension, 'embedded' as any);
++				return _asExtensionEvent(extHostWindow.receiveMessage)(listener, thisArg, disposables);
++			},
++			sendMessage(message: any) {
++				checkProposedApiEnabled(extension, 'embedded' as any);
++				extHostWindow.sendMessage(message);
++			},
+ 			get activeTextEditor() {
+ 				return extHostEditors.getActiveTextEditor();
+ 			},
+Index: sagemaker-code-editor/vscode/src/vs/workbench/api/common/extHost.protocol.ts
+===================================================================
+--- sagemaker-code-editor.orig/vscode/src/vs/workbench/api/common/extHost.protocol.ts
++++ sagemaker-code-editor/vscode/src/vs/workbench/api/common/extHost.protocol.ts
+@@ -1602,6 +1602,7 @@ export interface MainThreadWindowShape e
+ 	$getInitialState(): Promise<{ isFocused: boolean; isActive: boolean }>;
+ 	$openUri(uri: UriComponents, uriString: string | undefined, options: IOpenUriOptions): Promise<boolean>;
+ 	$asExternalUri(uri: UriComponents, options: IOpenUriOptions): Promise<UriComponents>;
++	$sendMessage(message: any): void;
+ }
+ 
+ export enum CandidatePortSource {
+@@ -2449,6 +2450,7 @@ export interface ExtHostDecorationsShape
+ export interface ExtHostWindowShape {
+ 	$onDidChangeWindowFocus(value: boolean): void;
+ 	$onDidChangeWindowActive(value: boolean): void;
++	$receiveMessage(message: any): void
+ }
+ 
+ export interface ExtHostLogLevelServiceShape {
+Index: sagemaker-code-editor/vscode/src/vs/workbench/api/common/extHostWindow.ts
+===================================================================
+--- sagemaker-code-editor.orig/vscode/src/vs/workbench/api/common/extHostWindow.ts
++++ sagemaker-code-editor/vscode/src/vs/workbench/api/common/extHostWindow.ts
+@@ -22,6 +22,7 @@ export class ExtHostWindow implements Ex
+ 	private _proxy: MainThreadWindowShape;
+ 
+ 	private readonly _onDidChangeWindowState = new Emitter<WindowState>();
++	private _receiveMessage: Emitter<any>;
+ 	readonly onDidChangeWindowState: Event<WindowState> = this._onDidChangeWindowState.event;
+ 
+ 	private _state = ExtHostWindow.InitialState;
+@@ -46,6 +47,19 @@ export class ExtHostWindow implements Ex
+ 			this.onDidChangeWindowProperty('focused', isFocused);
+ 			this.onDidChangeWindowProperty('active', isActive);
+ 		});
++		this._receiveMessage = new Emitter<any>();
++	}
++
++	$receiveMessage(message: any): void {
++		this._receiveMessage.fire(message);
++	}
++
++	public get receiveMessage(): Event<any> {
++		return this._receiveMessage.event;
++	}
++
++	sendMessage(message: any): void {
++		this._proxy.$sendMessage(message);
+ 	}
+ 
+ 	$onDidChangeWindowFocus(value: boolean) {
+Index: sagemaker-code-editor/vscode/src/vs/workbench/services/extensions/common/extensionsProposedApi.ts
+===================================================================
+--- sagemaker-code-editor.orig/vscode/src/vs/workbench/services/extensions/common/extensionsProposedApi.ts
++++ sagemaker-code-editor/vscode/src/vs/workbench/services/extensions/common/extensionsProposedApi.ts
+@@ -37,7 +37,7 @@ export class ExtensionsProposedApi {
+ 			for (const [k, value] of Object.entries(productService.extensionEnabledApiProposals)) {
+ 				const key = ExtensionIdentifier.toKey(k);
+ 				const proposalNames = value.filter(name => {
+-					if (!allApiProposals[<ApiProposalName>name]) {
++					if (!allApiProposals[<ApiProposalName>name] && name !== 'embedded') {
+ 						_logService.warn(`Via 'product.json#extensionEnabledApiProposals' extension '${key}' wants API proposal '${name}' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.`);
+ 						return false;
+ 					}
+@@ -64,7 +64,7 @@ export class ExtensionsProposedApi {
+ 		// warn about invalid proposal and remove them from the list
+ 		if (isNonEmptyArray(extension.enabledApiProposals)) {
+ 			extension.enabledApiProposals = extension.enabledApiProposals.filter(name => {
+-				const result = Boolean(allApiProposals[<ApiProposalName>name]);
++				const result = Boolean(allApiProposals[<ApiProposalName>name]) || name === 'embedded';
+ 				if (!result) {
+ 					this._logService.error(`Extension '${key}' wants API proposal '${name}' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.`);
+ 				}
+@@ -103,7 +103,7 @@ export class ExtensionsProposedApi {
+ 			return;
+ 		}
+ 
+-		if (!extension.isBuiltin && isNonEmptyArray(extension.enabledApiProposals)) {
++		if ((!extension.isBuiltin && extension.id !== 'amazonwebservices.aws-toolkit-vscode') && isNonEmptyArray(extension.enabledApiProposals)) {
+ 			// restrictive: extension cannot use proposed API in this context and its declaration is nulled
+ 			this._logService.error(`Extension '${extension.identifier.value} CANNOT USE these API proposals '${extension.enabledApiProposals?.join(', ') || '*'}'. You MUST start in extension development mode or use the --enable-proposed-api command line flag`);
+ 			extension.enabledApiProposals = [];
+Index: sagemaker-code-editor/vscode/src/vscode-dts/vscode.d.ts
+===================================================================
+--- sagemaker-code-editor.orig/vscode/src/vscode-dts/vscode.d.ts
++++ sagemaker-code-editor/vscode/src/vscode-dts/vscode.d.ts
+@@ -10335,6 +10335,8 @@ declare module 'vscode' {
+ 	 * asking for user input.
+ 	 */
+ 	export namespace window {
++		export const receiveMessage: Event<any>;
++		export function sendMessage(message: any): void;
+ 
+ 		/**
+ 		 * Represents the grid widget within the main editor area

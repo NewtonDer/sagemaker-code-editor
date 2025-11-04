@@ -1602,6 +1602,7 @@ export interface MainThreadWindowShape extends IDisposable {
 	$getInitialState(): Promise<{ isFocused: boolean; isActive: boolean }>;
 	$openUri(uri: UriComponents, uriString: string | undefined, options: IOpenUriOptions): Promise<boolean>;
 	$asExternalUri(uri: UriComponents, options: IOpenUriOptions): Promise<UriComponents>;
+	$sendMessage(message: any): void;
 }
 
 export enum CandidatePortSource {
@@ -2449,6 +2450,7 @@ export interface ExtHostDecorationsShape {
 export interface ExtHostWindowShape {
 	$onDidChangeWindowFocus(value: boolean): void;
 	$onDidChangeWindowActive(value: boolean): void;
+	$receiveMessage(message: any): void
 }
 
 export interface ExtHostLogLevelServiceShape {

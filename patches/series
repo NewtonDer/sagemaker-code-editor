@@ -19,3 +19,6 @@ post-startup-notifications.patch
 sagemaker-extensions-sync.patch
 display-language.patch
 custom-extensions-marketplace.diff
+remove-chat.patch
+remove-source-control.patch
+embedded-api.patch

@@ -20,9 +20,9 @@ Index: sagemaker-code-editor/vscode/src/vs/server/node/webClientServer.ts
 ===================================================================
 --- sagemaker-code-editor.orig/vscode/src/vs/server/node/webClientServer.ts
 +++ sagemaker-code-editor/vscode/src/vs/server/node/webClientServer.ts
-@@ -332,6 +332,7 @@ export class WebClientServer {
- 		const workbenchWebConfiguration = {
+@@ -334,6 +334,7 @@ export class WebClientServer {
  			remoteAuthority,
+ 			serverBasePath: this._basePath,
  			webviewEndpoint: vscodeBase + this._staticRoute + '/out/vs/workbench/contrib/webview/browser/pre',
 +			userDataPath: this._environmentService.userDataPath,
  			_wrapWebWorkerExtHostInIframe,
@@ -32,7 +32,7 @@ Index: sagemaker-code-editor/vscode/src/vs/workbench/browser/web.api.ts
 ===================================================================
 --- sagemaker-code-editor.orig/vscode/src/vs/workbench/browser/web.api.ts
 +++ sagemaker-code-editor/vscode/src/vs/workbench/browser/web.api.ts
-@@ -276,6 +276,11 @@ export interface IWorkbenchConstructionO
+@@ -298,6 +298,11 @@ export interface IWorkbenchConstructionO
  	 */
  	readonly configurationDefaults?: Record<string, any>;
  

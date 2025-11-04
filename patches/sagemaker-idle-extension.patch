@@ -315,7 +315,7 @@ Index: sagemaker-code-editor/vscode/src/vs/server/node/webClientServer.ts
  			if (pathname === this._callbackRoute) {
  				// callback support
  				return this._handleCallback(res);
-@@ -451,6 +491,33 @@ export class WebClientServer {
+@@ -452,6 +492,33 @@ export class WebClientServer {
  		});
  		return void res.end(data);
  	}

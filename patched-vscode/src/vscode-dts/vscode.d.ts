@@ -10335,6 +10335,8 @@ declare module 'vscode' {
 	 * asking for user input.
 	 */
 	export namespace window {
+		export const receiveMessage: Event<any>;
+		export function sendMessage(message: any): void;
 
 		/**
 		 * Represents the grid widget within the main editor area
