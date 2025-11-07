@@ -22,3 +22,5 @@ custom-extensions-marketplace.diff
 remove-chat.patch
 remove-source-control.patch
 embedded-api.patch
+validate-parent-origin-in-webview.patch
+fullscreen-toggle-button.patch
