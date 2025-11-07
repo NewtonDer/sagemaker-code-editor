@@ -16,7 +16,7 @@ Index: sagemaker-code-editor/vscode/src/vs/workbench/contrib/webview/browser/pre
  		// @ts-check
  		/// <reference lib="dom" />
  
-+		const aiLeagueHosts = ['https://aileague.aws.dev', 'https://beta.aileague.aws.dev'];
++		const aiLeagueHosts = ['aileague.aws.dev', 'beta.aileague.aws.dev', 'localhost'];
 +
  		const isSafari = (
  			navigator.vendor && navigator.vendor.indexOf('Apple') > -1 &&
@@ -80,11 +80,20 @@ Index: sagemaker-code-editor/vscode/src/vs/workbench/contrib/webview/browser/pre
 ===================================================================
 --- sagemaker-code-editor.orig/vscode/src/vs/workbench/contrib/webview/browser/pre/index.html
 +++ sagemaker-code-editor/vscode/src/vs/workbench/contrib/webview/browser/pre/index.html
+@@ -5,7 +5,7 @@
+ 	<meta charset="UTF-8">
+ 
+ 	<meta http-equiv="Content-Security-Policy"
+-		content="default-src 'none'; script-src 'sha256-R3BsSkqy7qFbvWSmwr7WqT1eg6Sq4zSe0uIlrUQ4EKE=' 'self'; frame-src 'self'; style-src 'unsafe-inline';">
++		content="default-src 'none'; script-src 'sha256-q8keH4Yjv2AjRCpyWg+BAg6jXgkX9hvKD93jCP2+jvY=' 'self'; frame-src 'self'; style-src 'unsafe-inline';">
+ 
+ 	<!-- Disable pinch zooming -->
+ 	<meta name="viewport"
 @@ -17,6 +17,8 @@
  		// @ts-check
  		/// <reference lib="dom" />
  
-+		const aiLeagueHosts = ['https://aileague.aws.dev', 'https://beta.aileague.aws.dev'];
++		const aiLeagueHosts = ['aileague.aws.dev', 'beta.aileague.aws.dev', 'localhost'];
 +
  		const isSafari = (
  			navigator.vendor && navigator.vendor.indexOf('Apple') > -1 &&
