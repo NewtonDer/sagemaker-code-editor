@@ -1384,7 +1384,8 @@ registerAction2(class CustomizeLayoutAction extends Action2 {
 				{
 					id: MenuId.LayoutControlMenu,
 					when: ContextKeyExpr.equals('config.workbench.layoutControl.type', 'both'),
-					group: 'z_end'
+					group: '0_workbench_toggles',
+					order: 3,
 				}
 			]
 		});
@@ -1549,3 +1550,18 @@ registerAction2(class CustomizeLayoutAction extends Action2 {
 		quickPick.show();
 	}
 });
+
+MenuRegistry.appendMenuItems([
+	{
+		id: MenuId.LayoutControlMenu,
+		item: {
+			group: 'z_end',
+			command: {
+				// eslint-disable-next-line local/code-no-unexternalized-strings
+				id: "workbench.action.toggleFullScreen",
+				title: localize('toggleFullScreen', "Toggle Full Screen"),
+				icon: fullscreenIcon,
+			},
+		}
+	}
+]);
