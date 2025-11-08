@@ -8,35 +8,34 @@ Index: sagemaker-code-editor/vscode/src/vs/workbench/contrib/webview/browser/pre
  		content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
 +
 +	<meta http-equiv="Content-Security-Policy"
-+		content="script-src 'self' 'sha256-PiuyKgOqitYd21ygwMjlv7wMnALvUcMxooE+KrOAKqw='; frame-src 'self'; style-src 'unsafe-inline';">
++		content="script-src 'self' 'sha256-Zd17fYL40aXsMGPD1I22faP3LTOfwScPq8riAkXuxbw='; frame-src 'self'; style-src 'unsafe-inline';">
  </head>
  
  <body style="margin: 0; overflow: hidden; width: 100%; height: 100%; overscroll-behavior-x: none;" role="document">
-@@ -16,6 +19,8 @@
- 		// @ts-check
- 		/// <reference lib="dom" />
- 
-+		const aiLeagueHosts = ['aileague.aws.dev', 'beta.aileague.aws.dev', 'localhost'];
-+
- 		const isSafari = (
- 			navigator.vendor && navigator.vendor.indexOf('Apple') > -1 &&
- 			navigator.userAgent &&
-@@ -336,46 +341,21 @@
+@@ -336,46 +339,30 @@
  
  			async signalReady() {
  				const start = (/** @type {string} */ parentOrigin) => {
 -					window.parent.postMessage({ target: ID, channel: 'webview-ready', data: {} }, parentOrigin, [this.channel.port2]);
+-				};
 +					const url = new URL(parentOrigin);
-+					if (aiLeagueHosts.indexOf(url.hostname) !== -1) {
-+						return window.parent.postMessage({ target: ID, channel: 'webview-ready', data: {} }, parentOrigin, [this.channel.port2]);
-+					}
-+					throw new Error(`Expected '${parentOrigin}' to be one of ${aiLeagueHosts}`);
- 				};
++					const hostname = url.hostname;
  
 -				const parentOrigin = searchParams.get('parentOrigin');
--
++					const aiLeagueHosts = ['aileague.aws.dev', 'beta.aileague.aws.dev', 'localhost'];
++					const nonProdPattern = /^[a-zA-Z0-9]{15}\.(devo|loadtest)\.studio\.(us-east-1|us-west-2)\.asfiovnxocqpcry\.com$/;
++					const prodPattern = /^[a-zA-Z0-9]{15}\.studio\.(us-east-1|us-west-2)\.sagemaker\.aws$/;
++
++					if (aiLeagueHosts.indexOf(hostname) !== -1
++						|| nonProdPattern.test(hostname)
++						|| prodPattern.test(hostname)) {
++						return window.parent.postMessage({ target: ID, channel: 'webview-ready', data: {} }, parentOrigin, [this.channel.port2]);
++					}
+ 
 -				const hostname = location.hostname;
--
++					throw new Error(`Expected '${parentOrigin}' to be one of ${aiLeagueHosts} or Studio wildcard patterns`);
++				};
+ 
 -				// It is safe to run if we are on the same host.
 -				const parent = new URL(parentOrigin)
 -				if (parent.hostname === hostname) {
@@ -85,35 +84,34 @@ Index: sagemaker-code-editor/vscode/src/vs/workbench/contrib/webview/browser/pre
  
  	<meta http-equiv="Content-Security-Policy"
 -		content="default-src 'none'; script-src 'sha256-R3BsSkqy7qFbvWSmwr7WqT1eg6Sq4zSe0uIlrUQ4EKE=' 'self'; frame-src 'self'; style-src 'unsafe-inline';">
-+		content="default-src 'none'; script-src 'sha256-q8keH4Yjv2AjRCpyWg+BAg6jXgkX9hvKD93jCP2+jvY=' 'self'; frame-src 'self'; style-src 'unsafe-inline';">
++		content="default-src 'none'; script-src 'sha256-8h0TvF21e9StJMXaaFU4bXZbQ5XH8Mea4EoQ7nHQhIc=' 'self'; frame-src 'self'; style-src 'unsafe-inline';">
  
  	<!-- Disable pinch zooming -->
  	<meta name="viewport"
-@@ -17,6 +17,8 @@
- 		// @ts-check
- 		/// <reference lib="dom" />
- 
-+		const aiLeagueHosts = ['aileague.aws.dev', 'beta.aileague.aws.dev', 'localhost'];
-+
- 		const isSafari = (
- 			navigator.vendor && navigator.vendor.indexOf('Apple') > -1 &&
- 			navigator.userAgent &&
-@@ -337,46 +339,21 @@
+@@ -337,46 +337,30 @@
  
  			async signalReady() {
  				const start = (/** @type {string} */ parentOrigin) => {
 -					window.parent.postMessage({ target: ID, channel: 'webview-ready', data: {} }, parentOrigin, [this.channel.port2]);
+-				};
 +					const url = new URL(parentOrigin);
-+					if (aiLeagueHosts.indexOf(url.hostname) !== -1) {
-+						return window.parent.postMessage({ target: ID, channel: 'webview-ready', data: {} }, parentOrigin, [this.channel.port2]);
-+					}
-+					throw new Error(`Expected '${parentOrigin}' to be one of ${aiLeagueHosts}`);
- 				};
++					const hostname = url.hostname;
  
 -				const parentOrigin = searchParams.get('parentOrigin');
--
++					const aiLeagueHosts = ['aileague.aws.dev', 'beta.aileague.aws.dev', 'localhost'];
++					const nonProdPattern = /^[a-zA-Z0-9]{15}\.(devo|loadtest)\.studio\.(us-east-1|us-west-2)\.asfiovnxocqpcry\.com$/;
++					const prodPattern = /^[a-zA-Z0-9]{15}\.studio\.(us-east-1|us-west-2)\.sagemaker\.aws$/;
++
++					if (aiLeagueHosts.indexOf(hostname) !== -1
++						|| nonProdPattern.test(hostname)
++						|| prodPattern.test(hostname)) {
++						return window.parent.postMessage({ target: ID, channel: 'webview-ready', data: {} }, parentOrigin, [this.channel.port2]);
++					}
+ 
 -				const hostname = location.hostname;
--
++					throw new Error(`Expected '${parentOrigin}' to be one of ${aiLeagueHosts} or Studio wildcard patterns`);
++				};
+ 
 -				// It is safe to run if we are on the same host.
 -				const parent = new URL(parentOrigin)
 -				if (parent.hostname === hostname) {

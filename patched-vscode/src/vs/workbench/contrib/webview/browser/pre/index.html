@@ -5,7 +5,7 @@
 	<meta charset="UTF-8">
 
 	<meta http-equiv="Content-Security-Policy"
-		content="default-src 'none'; script-src 'sha256-q8keH4Yjv2AjRCpyWg+BAg6jXgkX9hvKD93jCP2+jvY=' 'self'; frame-src 'self'; style-src 'unsafe-inline';">
+		content="default-src 'none'; script-src 'sha256-8h0TvF21e9StJMXaaFU4bXZbQ5XH8Mea4EoQ7nHQhIc=' 'self'; frame-src 'self'; style-src 'unsafe-inline';">
 
 	<!-- Disable pinch zooming -->
 	<meta name="viewport"
@@ -16,8 +16,6 @@
 	<script async type="module">
 		// @ts-check
 		/// <reference lib="dom" />
-
-		const aiLeagueHosts = ['aileague.aws.dev', 'beta.aileague.aws.dev', 'localhost'];
 
 		const isSafari = (
 			navigator.vendor && navigator.vendor.indexOf('Apple') > -1 &&
@@ -340,10 +338,19 @@
 			async signalReady() {
 				const start = (/** @type {string} */ parentOrigin) => {
 					const url = new URL(parentOrigin);
-					if (aiLeagueHosts.indexOf(url.hostname) !== -1) {
+					const hostname = url.hostname;
+
+					const aiLeagueHosts = ['aileague.aws.dev', 'beta.aileague.aws.dev', 'localhost'];
+					const nonProdPattern = /^[a-zA-Z0-9]{15}\.(devo|loadtest)\.studio\.(us-east-1|us-west-2)\.asfiovnxocqpcry\.com$/;
+					const prodPattern = /^[a-zA-Z0-9]{15}\.studio\.(us-east-1|us-west-2)\.sagemaker\.aws$/;
+
+					if (aiLeagueHosts.indexOf(hostname) !== -1
+						|| nonProdPattern.test(hostname)
+						|| prodPattern.test(hostname)) {
 						return window.parent.postMessage({ target: ID, channel: 'webview-ready', data: {} }, parentOrigin, [this.channel.port2]);
 					}
-					throw new Error(`Expected '${parentOrigin}' to be one of ${aiLeagueHosts}`);
+
+					throw new Error(`Expected '${parentOrigin}' to be one of ${aiLeagueHosts} or Studio wildcard patterns`);
 				};
 
 				const parentOrigin = searchParams.get('parentOrigin') || '';
