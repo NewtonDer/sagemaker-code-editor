@@ -80,7 +80,7 @@ Index: sagemaker-code-editor/vscode/src/vs/workbench/contrib/webview/browser/pre
  
  	<meta http-equiv="Content-Security-Policy"
 -		content="default-src 'none'; script-src 'sha256-R3BsSkqy7qFbvWSmwr7WqT1eg6Sq4zSe0uIlrUQ4EKE=' 'self'; frame-src 'self'; style-src 'unsafe-inline';">
-+		content="default-src 'none'; script-src 'self' 'sha256-lxZB7WmNLYkufDeM+ulu5Lud1m9tkPw08sDsfTkt4oo='; frame-src 'self'; style-src 'unsafe-inline';">
++		content="default-src 'none'; script-src 'self' 'sha256-t6iid7/x79xZY4CPWJViVY2LpSk6RbAdsTzgT7r6UVE='; frame-src 'self'; style-src 'unsafe-inline';">
  
  	<!-- Disable pinch zooming -->
  	<meta name="viewport"
