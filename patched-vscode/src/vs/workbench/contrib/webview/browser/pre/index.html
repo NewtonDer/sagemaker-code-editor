@@ -972,7 +972,6 @@
 				newFrame.setAttribute('frameborder', '0');
 
 				const sandboxRules = new Set(['allow-same-origin', 'allow-pointer-lock']);
-				console.log('options?:', options);
 				if (options.allowScripts) {
 					sandboxRules.add('allow-scripts');
 					sandboxRules.add('allow-downloads');

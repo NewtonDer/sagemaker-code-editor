@@ -143,14 +143,6 @@ Index: sagemaker-code-editor/vscode/src/vs/workbench/contrib/webview/browser/pre
  			}
  		}();
  
-@@ -992,6 +972,7 @@
- 				newFrame.setAttribute('frameborder', '0');
- 
- 				const sandboxRules = new Set(['allow-same-origin', 'allow-pointer-lock']);
-+				console.log('options?:', options);
- 				if (options.allowScripts) {
- 					sandboxRules.add('allow-scripts');
- 					sandboxRules.add('allow-downloads');
 Index: sagemaker-code-editor/vscode/src/vs/server/node/webClientServer.ts
 ===================================================================
 --- sagemaker-code-editor.orig/vscode/src/vs/server/node/webClientServer.ts
