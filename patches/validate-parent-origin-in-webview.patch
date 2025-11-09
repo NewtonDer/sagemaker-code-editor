@@ -8,7 +8,7 @@ Index: sagemaker-code-editor/vscode/src/vs/workbench/contrib/webview/browser/pre
  		content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
 +
 +	<meta http-equiv="Content-Security-Policy"
-+		content="script-src 'self' 'sha256-8h0TvF21e9StJMXaaFU4bXZbQ5XH8Mea4EoQ7nHQhIc='; frame-src 'self'; style-src 'unsafe-inline';">
++		content="script-src 'self' 'sha256-t6iid7/x79xZY4CPWJViVY2LpSk6RbAdsTzgT7r6UVE='; frame-src 'self'; style-src 'unsafe-inline';">
  </head>
  
  <body style="margin: 0; overflow: hidden; width: 100%; height: 100%; overscroll-behavior-x: none;" role="document">
