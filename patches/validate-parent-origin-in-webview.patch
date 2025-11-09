@@ -8,11 +8,11 @@ Index: sagemaker-code-editor/vscode/src/vs/workbench/contrib/webview/browser/pre
  		content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
 +
 +	<meta http-equiv="Content-Security-Policy"
-+		content="script-src 'self' 'sha256-Zd17fYL40aXsMGPD1I22faP3LTOfwScPq8riAkXuxbw='; frame-src 'self'; style-src 'unsafe-inline';">
++		content="script-src 'self' 'sha256-8h0TvF21e9StJMXaaFU4bXZbQ5XH8Mea4EoQ7nHQhIc='; frame-src 'self'; style-src 'unsafe-inline';">
  </head>
  
  <body style="margin: 0; overflow: hidden; width: 100%; height: 100%; overscroll-behavior-x: none;" role="document">
-@@ -336,46 +339,30 @@
+@@ -336,46 +339,26 @@
  
  			async signalReady() {
  				const start = (/** @type {string} */ parentOrigin) => {
@@ -22,25 +22,21 @@ Index: sagemaker-code-editor/vscode/src/vs/workbench/contrib/webview/browser/pre
 +					const hostname = url.hostname;
  
 -				const parentOrigin = searchParams.get('parentOrigin');
-+					const aiLeagueHosts = ['aileague.aws.dev', 'beta.aileague.aws.dev', 'localhost'];
-+					const nonProdPattern = /^[a-zA-Z0-9]{15}\.(devo|loadtest)\.studio\.(us-east-1|us-west-2)\.asfiovnxocqpcry\.com$/;
-+					const prodPattern = /^[a-zA-Z0-9]{15}\.studio\.(us-east-1|us-west-2)\.sagemaker\.aws$/;
-+
-+					if (aiLeagueHosts.indexOf(hostname) !== -1
-+						|| nonProdPattern.test(hostname)
-+						|| prodPattern.test(hostname)) {
-+						return window.parent.postMessage({ target: ID, channel: 'webview-ready', data: {} }, parentOrigin, [this.channel.port2]);
-+					}
++					const aiLeagueHosts = ['aileague.aws.dev', 'beta.aileague.aws.dev'];
  
 -				const hostname = location.hostname;
-+					throw new Error(`Expected '${parentOrigin}' to be one of ${aiLeagueHosts} or Studio wildcard patterns`);
-+				};
++					if (hostname === location.hostname || aiLeagueHosts.indexOf(hostname) !== -1) {
++						return window.parent.postMessage({ target: ID, channel: 'webview-ready', data: {} }, parentOrigin, [this.channel.port2]);
++					}
  
 -				// It is safe to run if we are on the same host.
 -				const parent = new URL(parentOrigin)
 -				if (parent.hostname === hostname) {
 -					return start(parentOrigin)
 -				}
++					throw new Error(`Expected '${parentOrigin}' to be one of ${aiLeagueHosts} or Studio wildcard patterns`);
++				};
++
 +				const parentOrigin = searchParams.get('parentOrigin') || '';
  
  				if (!crypto.subtle) {
@@ -84,11 +80,11 @@ Index: sagemaker-code-editor/vscode/src/vs/workbench/contrib/webview/browser/pre
  
  	<meta http-equiv="Content-Security-Policy"
 -		content="default-src 'none'; script-src 'sha256-R3BsSkqy7qFbvWSmwr7WqT1eg6Sq4zSe0uIlrUQ4EKE=' 'self'; frame-src 'self'; style-src 'unsafe-inline';">
-+		content="default-src 'none'; script-src 'sha256-8h0TvF21e9StJMXaaFU4bXZbQ5XH8Mea4EoQ7nHQhIc=' 'self'; frame-src 'self'; style-src 'unsafe-inline';">
++		content="default-src 'none'; script-src 'self' 'sha256-lxZB7WmNLYkufDeM+ulu5Lud1m9tkPw08sDsfTkt4oo='; frame-src 'self'; style-src 'unsafe-inline';">
  
  	<!-- Disable pinch zooming -->
  	<meta name="viewport"
-@@ -337,46 +337,30 @@
+@@ -337,46 +337,26 @@
  
  			async signalReady() {
  				const start = (/** @type {string} */ parentOrigin) => {
@@ -98,25 +94,21 @@ Index: sagemaker-code-editor/vscode/src/vs/workbench/contrib/webview/browser/pre
 +					const hostname = url.hostname;
  
 -				const parentOrigin = searchParams.get('parentOrigin');
-+					const aiLeagueHosts = ['aileague.aws.dev', 'beta.aileague.aws.dev', 'localhost'];
-+					const nonProdPattern = /^[a-zA-Z0-9]{15}\.(devo|loadtest)\.studio\.(us-east-1|us-west-2)\.asfiovnxocqpcry\.com$/;
-+					const prodPattern = /^[a-zA-Z0-9]{15}\.studio\.(us-east-1|us-west-2)\.sagemaker\.aws$/;
-+
-+					if (aiLeagueHosts.indexOf(hostname) !== -1
-+						|| nonProdPattern.test(hostname)
-+						|| prodPattern.test(hostname)) {
-+						return window.parent.postMessage({ target: ID, channel: 'webview-ready', data: {} }, parentOrigin, [this.channel.port2]);
-+					}
++					const aiLeagueHosts = ['aileague.aws.dev', 'beta.aileague.aws.dev'];
  
 -				const hostname = location.hostname;
-+					throw new Error(`Expected '${parentOrigin}' to be one of ${aiLeagueHosts} or Studio wildcard patterns`);
-+				};
++					if (hostname === location.hostname || aiLeagueHosts.indexOf(hostname) !== -1) {
++						return window.parent.postMessage({ target: ID, channel: 'webview-ready', data: {} }, parentOrigin, [this.channel.port2]);
++					}
  
 -				// It is safe to run if we are on the same host.
 -				const parent = new URL(parentOrigin)
 -				if (parent.hostname === hostname) {
 -					return start(parentOrigin)
 -				}
++					throw new Error(`Expected '${parentOrigin}' to be one of ${aiLeagueHosts} or Studio wildcard patterns`);
++				};
++
 +				const parentOrigin = searchParams.get('parentOrigin') || '';
  
  				if (!crypto.subtle) {
@@ -151,3 +143,33 @@ Index: sagemaker-code-editor/vscode/src/vs/workbench/contrib/webview/browser/pre
  			}
  		}();
  
+@@ -992,6 +972,7 @@
+ 				newFrame.setAttribute('frameborder', '0');
+ 
+ 				const sandboxRules = new Set(['allow-same-origin', 'allow-pointer-lock']);
++				console.log('options?:', options);
+ 				if (options.allowScripts) {
+ 					sandboxRules.add('allow-scripts');
+ 					sandboxRules.add('allow-downloads');
+Index: sagemaker-code-editor/vscode/src/vs/server/node/webClientServer.ts
+===================================================================
+--- sagemaker-code-editor.orig/vscode/src/vs/server/node/webClientServer.ts
++++ sagemaker-code-editor/vscode/src/vs/server/node/webClientServer.ts
+@@ -80,6 +80,8 @@ export async function serveFile(filePath
+ 			responseHeaders['Cache-Control'] = 'no-store';
+ 		}
+ 
++		responseHeaders['Content-Security-Policy'] = `frame-ancestors 'self' http://localhost:3000 https://aileague.aws.dev https://beta.aileague.aws.dev`;
++
+ 		responseHeaders['Content-Type'] = textMimeType[extname(filePath)] || getMediaMime(filePath) || 'text/plain';
+ 
+ 		res.writeHead(200, responseHeaders);
+@@ -429,7 +431,7 @@ export class WebClientServer {
+ 			`script-src 'self' 'unsafe-eval' ${this._getScriptCspHashes(data).join(' ')} '${webWorkerExtensionHostIframeScriptSHA}' ${useTestResolver ? '' : `http://${remoteAuthority}`};`, // the sha is the same as in src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html
+ 			'child-src \'self\';',
+ 			`frame-src 'self' https://*.vscode-cdn.net data:;`,
+-			`frame-ancestors 'self' https://aileague.aws.dev https://beta.aileague.aws.dev;`,
++			`frame-ancestors 'self' http://localhost:3000 https://aileague.aws.dev https://beta.aileague.aws.dev;`,
+ 			'worker-src \'self\' data: blob:;',
+ 			'style-src \'self\' \'unsafe-inline\';',
+ 			'connect-src \'self\' ws: wss: https://main.vscode-cdn.net http://localhost:* https://localhost:* https://login.microsoftonline.com/ https://update.code.visualstudio.com https://*.vscode-unpkg.net/ https://default.exp-tas.com/vscode/ab https://vscode-sync.trafficmanager.net https://vscode-sync-insiders.trafficmanager.net https://*.gallerycdn.vsassets.io https://marketplace.visualstudio.com https://openvsxorg.blob.core.windows.net https://az764295.vo.msecnd.net  https://code.visualstudio.com https://*.gallery.vsassets.io https://*.rel.tunnels.api.visualstudio.com wss://*.rel.tunnels.api.visualstudio.com https://*.servicebus.windows.net/ https://vscode.blob.core.windows.net https://vscode.search.windows.net https://vsmarketplacebadges.dev https://vscode.download.prss.microsoft.com https://download.visualstudio.microsoft.com https://*.vscode-unpkg.net https://open-vsx.org;',

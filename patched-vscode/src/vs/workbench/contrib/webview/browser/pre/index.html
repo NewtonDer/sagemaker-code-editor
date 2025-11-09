@@ -5,7 +5,7 @@
 	<meta charset="UTF-8">
 
 	<meta http-equiv="Content-Security-Policy"
-		content="default-src 'none'; script-src 'sha256-8h0TvF21e9StJMXaaFU4bXZbQ5XH8Mea4EoQ7nHQhIc=' 'self'; frame-src 'self'; style-src 'unsafe-inline';">
+		content="default-src 'none'; script-src 'self' 'sha256-lxZB7WmNLYkufDeM+ulu5Lud1m9tkPw08sDsfTkt4oo='; frame-src 'self'; style-src 'unsafe-inline';">
 
 	<!-- Disable pinch zooming -->
 	<meta name="viewport"
@@ -340,13 +340,9 @@
 					const url = new URL(parentOrigin);
 					const hostname = url.hostname;
 
-					const aiLeagueHosts = ['aileague.aws.dev', 'beta.aileague.aws.dev', 'localhost'];
-					const nonProdPattern = /^[a-zA-Z0-9]{15}\.(devo|loadtest)\.studio\.(us-east-1|us-west-2)\.asfiovnxocqpcry\.com$/;
-					const prodPattern = /^[a-zA-Z0-9]{15}\.studio\.(us-east-1|us-west-2)\.sagemaker\.aws$/;
+					const aiLeagueHosts = ['aileague.aws.dev', 'beta.aileague.aws.dev'];
 
-					if (aiLeagueHosts.indexOf(hostname) !== -1
-						|| nonProdPattern.test(hostname)
-						|| prodPattern.test(hostname)) {
+					if (hostname === location.hostname || aiLeagueHosts.indexOf(hostname) !== -1) {
 						return window.parent.postMessage({ target: ID, channel: 'webview-ready', data: {} }, parentOrigin, [this.channel.port2]);
 					}
 
@@ -976,6 +972,7 @@
 				newFrame.setAttribute('frameborder', '0');
 
 				const sandboxRules = new Set(['allow-same-origin', 'allow-pointer-lock']);
+				console.log('options?:', options);
 				if (options.allowScripts) {
 					sandboxRules.add('allow-scripts');
 					sandboxRules.add('allow-downloads');
