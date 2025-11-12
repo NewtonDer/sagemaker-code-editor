@@ -1,0 +1,61 @@
+Index: sagemaker-code-editor/vscode/src/vs/workbench/services/userDataProfile/browser/globalStateResource.ts
+===================================================================
+--- sagemaker-code-editor.orig/vscode/src/vs/workbench/services/userDataProfile/browser/globalStateResource.ts
++++ sagemaker-code-editor/vscode/src/vs/workbench/services/userDataProfile/browser/globalStateResource.ts
+@@ -20,6 +20,21 @@ interface IGlobalState {
+ 	storage: IStringDictionary<string>;
+ }
+ 
++interface IViewlet {
++	id: string;
++	pinned: boolean;
++	visible: boolean;
++	order: number;
++}
++
++const VIEWLET_AMAZONQ = 'workbench.view.extension.amazonq';
++const VIEWLET_AWSTOOLKIT = 'workbench.view.extension.aws-explorer';
++
++const AI_LEAGUE_VIEWLETS = [
++	VIEWLET_AMAZONQ,
++	VIEWLET_AWSTOOLKIT,
++];
++
+ export class GlobalStateResourceInitializer implements IProfileResourceInitializer {
+ 
+ 	constructor(@IStorageService private readonly storageService: IStorageService) {
+@@ -28,6 +43,17 @@ export class GlobalStateResourceInitiali
+ 	async initialize(content: string): Promise<void> {
+ 		const globalState: IGlobalState = JSON.parse(content);
+ 		const storageKeys = Object.keys(globalState.storage);
++
++		const pinnedViewlets = JSON.parse(globalState.storage['workbench.activity.pinnedViewlets2']);
++		const newPinnedViewlets = pinnedViewlets.map((viewlet: IViewlet) => (
++			{
++				...viewlet,
++				pinned: AI_LEAGUE_VIEWLETS.includes(viewlet.id),
++				visible: viewlet.id === VIEWLET_AWSTOOLKIT,
++			}
++		));
++		globalState.storage['workbench.activity.pinnedViewlets2'] = JSON.stringify(newPinnedViewlets);
++
+ 		if (storageKeys.length) {
+ 			const storageEntries: Array<IStorageEntry> = [];
+ 			for (const key of storageKeys) {
+@@ -53,8 +79,6 @@ export class GlobalStateResource impleme
+ 	}
+ 
+ 	async apply(content: string, profile: IUserDataProfile): Promise<void> {
+-		console.log('globalState profile:', profile);
+-		console.log('globalState content:', content);
+ 		const globalState: IGlobalState = JSON.parse(content);
+ 		await this.writeGlobalState(globalState, profile);
+ 	}
+@@ -72,7 +96,6 @@ export class GlobalStateResource impleme
+ 
+ 	private async writeGlobalState(globalState: IGlobalState, profile: IUserDataProfile): Promise<void> {
+ 		const storageKeys = Object.keys(globalState.storage);
+-		console.log('global state:', profile);
+ 		if (storageKeys.length) {
+ 			const updatedStorage = new Map<string, string | undefined>();
+ 			const nonProfileKeys = [

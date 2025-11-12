@@ -24,3 +24,4 @@ remove-source-control.patch
 embedded-api.patch
 validate-parent-origin-in-webview.patch
 fullscreen-toggle-button.patch
+hide_activity_bar_parts.patch
