@@ -2,7 +2,7 @@ Index: sagemaker-code-editor/vscode/src/vs/workbench/services/userDataProfile/br
 ===================================================================
 --- sagemaker-code-editor.orig/vscode/src/vs/workbench/services/userDataProfile/browser/globalStateResource.ts
 +++ sagemaker-code-editor/vscode/src/vs/workbench/services/userDataProfile/browser/globalStateResource.ts
-@@ -20,14 +20,48 @@ interface IGlobalState {
+@@ -20,6 +20,21 @@ interface IGlobalState {
  	storage: IStringDictionary<string>;
  }
  
@@ -24,14 +24,11 @@ Index: sagemaker-code-editor/vscode/src/vs/workbench/services/userDataProfile/br
  export class GlobalStateResourceInitializer implements IProfileResourceInitializer {
  
  	constructor(@IStorageService private readonly storageService: IStorageService) {
- 	}
+@@ -27,7 +42,20 @@ export class GlobalStateResourceInitiali
  
  	async initialize(content: string): Promise<void> {
-+		console.log('globalState content:', content);
  		const globalState: IGlobalState = JSON.parse(content);
-+		console.log('globalState globalState:', globalState);
 +		const pinnedViewlets = JSON.parse(globalState.storage['workbench.activity.pinnedViewlets2']);
-+		console.log('globalState pinnedViewlets:', pinnedViewlets);
 +
 +		const newPinnedViewlets = pinnedViewlets.map((viewlet: IViewlet) => (
 +			{
@@ -40,41 +37,24 @@ Index: sagemaker-code-editor/vscode/src/vs/workbench/services/userDataProfile/br
 +				visible: viewlet.id === VIEWLET_AWSTOOLKIT,
 +			}
 +		));
-+		console.log('globalState newPinnedViewlets:', newPinnedViewlets);
 +
 +		globalState.storage['workbench.activity.pinnedViewlets2'] = JSON.stringify(newPinnedViewlets);
 +
-+		console.log('globalState globalStorage:', globalState.storage['workbench.activity.pinnedViewlets2']);
  		const storageKeys = Object.keys(globalState.storage);
-+		console.log('globalState storageKeys:', storageKeys);
 +
  		if (storageKeys.length) {
  			const storageEntries: Array<IStorageEntry> = [];
  			for (const key of storageKeys) {
-@@ -49,19 +83,20 @@ export class GlobalStateResource impleme
- 
- 	async getContent(profile: IUserDataProfile): Promise<string> {
- 		const globalState = await this.getGlobalState(profile);
-+		console.log('globalState getContent:', globalState);
- 		return JSON.stringify(globalState);
+@@ -53,8 +81,6 @@ export class GlobalStateResource impleme
  	}
  
  	async apply(content: string, profile: IUserDataProfile): Promise<void> {
 -		console.log('globalState profile:', profile);
 -		console.log('globalState content:', content);
  		const globalState: IGlobalState = JSON.parse(content);
-+		console.log('globalState content:', globalState);
  		await this.writeGlobalState(globalState, profile);
  	}
- 
- 	async getGlobalState(profile: IUserDataProfile): Promise<IGlobalState> {
- 		const storage: IStringDictionary<string> = {};
- 		const storageData = await this.userDataProfileStorageService.readStorageData(profile);
-+		console.log('globalState storageData:', storageData);
- 		for (const [key, value] of storageData) {
- 			if (value.value !== undefined && value.target === StorageTarget.USER) {
- 				storage[key] = value.value;
-@@ -72,7 +107,6 @@ export class GlobalStateResource impleme
+@@ -72,7 +98,6 @@ export class GlobalStateResource impleme
  
  	private async writeGlobalState(globalState: IGlobalState, profile: IUserDataProfile): Promise<void> {
  		const storageKeys = Object.keys(globalState.storage);
