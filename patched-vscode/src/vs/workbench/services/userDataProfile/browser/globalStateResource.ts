@@ -41,11 +41,8 @@ export class GlobalStateResourceInitializer implements IProfileResourceInitializ
 	}
 
 	async initialize(content: string): Promise<void> {
-		console.log('globalState content:', content);
 		const globalState: IGlobalState = JSON.parse(content);
-		console.log('globalState globalState:', globalState);
 		const pinnedViewlets = JSON.parse(globalState.storage['workbench.activity.pinnedViewlets2']);
-		console.log('globalState pinnedViewlets:', pinnedViewlets);
 
 		const newPinnedViewlets = pinnedViewlets.map((viewlet: IViewlet) => (
 			{
@@ -54,13 +51,10 @@ export class GlobalStateResourceInitializer implements IProfileResourceInitializ
 				visible: viewlet.id === VIEWLET_AWSTOOLKIT,
 			}
 		));
-		console.log('globalState newPinnedViewlets:', newPinnedViewlets);
 
 		globalState.storage['workbench.activity.pinnedViewlets2'] = JSON.stringify(newPinnedViewlets);
 
-		console.log('globalState globalStorage:', globalState.storage['workbench.activity.pinnedViewlets2']);
 		const storageKeys = Object.keys(globalState.storage);
-		console.log('globalState storageKeys:', storageKeys);
 
 		if (storageKeys.length) {
 			const storageEntries: Array<IStorageEntry> = [];
@@ -83,20 +77,17 @@ export class GlobalStateResource implements IProfileResource {
 
 	async getContent(profile: IUserDataProfile): Promise<string> {
 		const globalState = await this.getGlobalState(profile);
-		console.log('globalState getContent:', globalState);
 		return JSON.stringify(globalState);
 	}
 
 	async apply(content: string, profile: IUserDataProfile): Promise<void> {
 		const globalState: IGlobalState = JSON.parse(content);
-		console.log('globalState content:', globalState);
 		await this.writeGlobalState(globalState, profile);
 	}
 
 	async getGlobalState(profile: IUserDataProfile): Promise<IGlobalState> {
 		const storage: IStringDictionary<string> = {};
 		const storageData = await this.userDataProfileStorageService.readStorageData(profile);
-		console.log('globalState storageData:', storageData);
 		for (const [key, value] of storageData) {
 			if (value.value !== undefined && value.target === StorageTarget.USER) {
 				storage[key] = value.value;
