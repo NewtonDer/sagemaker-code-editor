@@ -83,6 +83,11 @@ export interface IPaneCompositeBarOptions {
 	readonly colors: (theme: IColorTheme) => ICompositeBarColors;
 }
 
+const AI_LEAGUE_VIEWLETS = [
+	'workbench.view.extension.aws-explorer',
+	'workbench.view.extension.amazonq',
+];
+
 export class PaneCompositeBar extends Disposable {
 
 	private readonly viewContainerDisposables = this._register(new DisposableMap<string, IDisposable>());
@@ -578,12 +583,28 @@ export class PaneCompositeBar extends Disposable {
 
 	private storeCachedViewContainersState(cachedViewContainers: ICachedViewContainer[]): void {
 		const pinnedViewContainers = this.getPinnedViewContainers();
-		this.setPinnedViewContainers(cachedViewContainers.map(({ id, pinned, order }) => ({
+		const views = cachedViewContainers.map(({ id, pinned, order }) => ({
 			id,
 			pinned,
 			visible: Boolean(pinnedViewContainers.find(({ id: pinnedId }) => pinnedId === id)?.visible),
 			order
-		} satisfies IPinnedViewContainer)));
+		} satisfies IPinnedViewContainer));
+
+		const hideViews = views.map((view) => {
+			const shouldHide = view.id.startsWith('workbench.view') && !AI_LEAGUE_VIEWLETS.includes(view.id);
+
+			return {
+				...view,
+				pinned: !shouldHide,
+				visible: !shouldHide,
+			};
+		});
+
+		if (this.location === ViewContainerLocation.Sidebar) {
+			this.setPinnedViewContainers(hideViews);
+		} else {
+			this.setPinnedViewContainers(views);
+		}
 
 		this.setPlaceholderViewContainers(cachedViewContainers.map(({ id, icon, name, views, isBuiltin }) => ({
 			id,

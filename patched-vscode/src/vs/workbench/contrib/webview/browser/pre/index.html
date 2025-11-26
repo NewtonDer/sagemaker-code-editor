@@ -5,7 +5,7 @@
 	<meta charset="UTF-8">
 
 	<meta http-equiv="Content-Security-Policy"
-		content="default-src 'none'; script-src 'sha256-q8keH4Yjv2AjRCpyWg+BAg6jXgkX9hvKD93jCP2+jvY=' 'self'; frame-src 'self'; style-src 'unsafe-inline';">
+		content="default-src 'none'; script-src 'self' 'sha256-t6iid7/x79xZY4CPWJViVY2LpSk6RbAdsTzgT7r6UVE='; frame-src 'self'; style-src 'unsafe-inline';">
 
 	<!-- Disable pinch zooming -->
 	<meta name="viewport"
@@ -16,8 +16,6 @@
 	<script async type="module">
 		// @ts-check
 		/// <reference lib="dom" />
-
-		const aiLeagueHosts = ['aileague.aws.dev', 'beta.aileague.aws.dev', 'localhost'];
 
 		const isSafari = (
 			navigator.vendor && navigator.vendor.indexOf('Apple') > -1 &&
@@ -340,10 +338,15 @@
 			async signalReady() {
 				const start = (/** @type {string} */ parentOrigin) => {
 					const url = new URL(parentOrigin);
-					if (aiLeagueHosts.indexOf(url.hostname) !== -1) {
+					const hostname = url.hostname;
+
+					const aiLeagueHosts = ['aileague.aws.dev', 'beta.aileague.aws.dev'];
+
+					if (hostname === location.hostname || aiLeagueHosts.indexOf(hostname) !== -1) {
 						return window.parent.postMessage({ target: ID, channel: 'webview-ready', data: {} }, parentOrigin, [this.channel.port2]);
 					}
-					throw new Error(`Expected '${parentOrigin}' to be one of ${aiLeagueHosts}`);
+
+					throw new Error(`Expected '${parentOrigin}' to be one of ${aiLeagueHosts} or Studio wildcard patterns`);
 				};
 
 				const parentOrigin = searchParams.get('parentOrigin') || '';

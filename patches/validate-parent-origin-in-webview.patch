@@ -8,40 +8,35 @@ Index: sagemaker-code-editor/vscode/src/vs/workbench/contrib/webview/browser/pre
  		content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
 +
 +	<meta http-equiv="Content-Security-Policy"
-+		content="script-src 'self' 'sha256-PiuyKgOqitYd21ygwMjlv7wMnALvUcMxooE+KrOAKqw='; frame-src 'self'; style-src 'unsafe-inline';">
++		content="script-src 'self' 'sha256-t6iid7/x79xZY4CPWJViVY2LpSk6RbAdsTzgT7r6UVE='; frame-src 'self'; style-src 'unsafe-inline';">
  </head>
  
  <body style="margin: 0; overflow: hidden; width: 100%; height: 100%; overscroll-behavior-x: none;" role="document">
-@@ -16,6 +19,8 @@
- 		// @ts-check
- 		/// <reference lib="dom" />
- 
-+		const aiLeagueHosts = ['aileague.aws.dev', 'beta.aileague.aws.dev', 'localhost'];
-+
- 		const isSafari = (
- 			navigator.vendor && navigator.vendor.indexOf('Apple') > -1 &&
- 			navigator.userAgent &&
-@@ -336,46 +341,21 @@
+@@ -336,46 +339,26 @@
  
  			async signalReady() {
  				const start = (/** @type {string} */ parentOrigin) => {
 -					window.parent.postMessage({ target: ID, channel: 'webview-ready', data: {} }, parentOrigin, [this.channel.port2]);
+-				};
 +					const url = new URL(parentOrigin);
-+					if (aiLeagueHosts.indexOf(url.hostname) !== -1) {
-+						return window.parent.postMessage({ target: ID, channel: 'webview-ready', data: {} }, parentOrigin, [this.channel.port2]);
-+					}
-+					throw new Error(`Expected '${parentOrigin}' to be one of ${aiLeagueHosts}`);
- 				};
++					const hostname = url.hostname;
  
 -				const parentOrigin = searchParams.get('parentOrigin');
--
++					const aiLeagueHosts = ['aileague.aws.dev', 'beta.aileague.aws.dev'];
+ 
 -				const hostname = location.hostname;
--
++					if (hostname === location.hostname || aiLeagueHosts.indexOf(hostname) !== -1) {
++						return window.parent.postMessage({ target: ID, channel: 'webview-ready', data: {} }, parentOrigin, [this.channel.port2]);
++					}
+ 
 -				// It is safe to run if we are on the same host.
 -				const parent = new URL(parentOrigin)
 -				if (parent.hostname === hostname) {
 -					return start(parentOrigin)
 -				}
++					throw new Error(`Expected '${parentOrigin}' to be one of ${aiLeagueHosts} or Studio wildcard patterns`);
++				};
++
 +				const parentOrigin = searchParams.get('parentOrigin') || '';
  
  				if (!crypto.subtle) {
@@ -85,40 +80,35 @@ Index: sagemaker-code-editor/vscode/src/vs/workbench/contrib/webview/browser/pre
  
  	<meta http-equiv="Content-Security-Policy"
 -		content="default-src 'none'; script-src 'sha256-R3BsSkqy7qFbvWSmwr7WqT1eg6Sq4zSe0uIlrUQ4EKE=' 'self'; frame-src 'self'; style-src 'unsafe-inline';">
-+		content="default-src 'none'; script-src 'sha256-q8keH4Yjv2AjRCpyWg+BAg6jXgkX9hvKD93jCP2+jvY=' 'self'; frame-src 'self'; style-src 'unsafe-inline';">
++		content="default-src 'none'; script-src 'self' 'sha256-t6iid7/x79xZY4CPWJViVY2LpSk6RbAdsTzgT7r6UVE='; frame-src 'self'; style-src 'unsafe-inline';">
  
  	<!-- Disable pinch zooming -->
  	<meta name="viewport"
-@@ -17,6 +17,8 @@
- 		// @ts-check
- 		/// <reference lib="dom" />
- 
-+		const aiLeagueHosts = ['aileague.aws.dev', 'beta.aileague.aws.dev', 'localhost'];
-+
- 		const isSafari = (
- 			navigator.vendor && navigator.vendor.indexOf('Apple') > -1 &&
- 			navigator.userAgent &&
-@@ -337,46 +339,21 @@
+@@ -337,46 +337,26 @@
  
  			async signalReady() {
  				const start = (/** @type {string} */ parentOrigin) => {
 -					window.parent.postMessage({ target: ID, channel: 'webview-ready', data: {} }, parentOrigin, [this.channel.port2]);
+-				};
 +					const url = new URL(parentOrigin);
-+					if (aiLeagueHosts.indexOf(url.hostname) !== -1) {
-+						return window.parent.postMessage({ target: ID, channel: 'webview-ready', data: {} }, parentOrigin, [this.channel.port2]);
-+					}
-+					throw new Error(`Expected '${parentOrigin}' to be one of ${aiLeagueHosts}`);
- 				};
++					const hostname = url.hostname;
  
 -				const parentOrigin = searchParams.get('parentOrigin');
--
++					const aiLeagueHosts = ['aileague.aws.dev', 'beta.aileague.aws.dev'];
+ 
 -				const hostname = location.hostname;
--
++					if (hostname === location.hostname || aiLeagueHosts.indexOf(hostname) !== -1) {
++						return window.parent.postMessage({ target: ID, channel: 'webview-ready', data: {} }, parentOrigin, [this.channel.port2]);
++					}
+ 
 -				// It is safe to run if we are on the same host.
 -				const parent = new URL(parentOrigin)
 -				if (parent.hostname === hostname) {
 -					return start(parentOrigin)
 -				}
++					throw new Error(`Expected '${parentOrigin}' to be one of ${aiLeagueHosts} or Studio wildcard patterns`);
++				};
++
 +				const parentOrigin = searchParams.get('parentOrigin') || '';
  
  				if (!crypto.subtle) {
@@ -153,3 +143,25 @@ Index: sagemaker-code-editor/vscode/src/vs/workbench/contrib/webview/browser/pre
  			}
  		}();
  
+Index: sagemaker-code-editor/vscode/src/vs/server/node/webClientServer.ts
+===================================================================
+--- sagemaker-code-editor.orig/vscode/src/vs/server/node/webClientServer.ts
++++ sagemaker-code-editor/vscode/src/vs/server/node/webClientServer.ts
+@@ -80,6 +80,8 @@ export async function serveFile(filePath
+ 			responseHeaders['Cache-Control'] = 'no-store';
+ 		}
+ 
++		responseHeaders['Content-Security-Policy'] = `frame-ancestors 'self' http://localhost:3000 https://aileague.aws.dev https://beta.aileague.aws.dev`;
++
+ 		responseHeaders['Content-Type'] = textMimeType[extname(filePath)] || getMediaMime(filePath) || 'text/plain';
+ 
+ 		res.writeHead(200, responseHeaders);
+@@ -429,7 +431,7 @@ export class WebClientServer {
+ 			`script-src 'self' 'unsafe-eval' ${this._getScriptCspHashes(data).join(' ')} '${webWorkerExtensionHostIframeScriptSHA}' ${useTestResolver ? '' : `http://${remoteAuthority}`};`, // the sha is the same as in src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html
+ 			'child-src \'self\';',
+ 			`frame-src 'self' https://*.vscode-cdn.net data:;`,
+-			`frame-ancestors 'self' https://aileague.aws.dev https://beta.aileague.aws.dev;`,
++			`frame-ancestors 'self' http://localhost:3000 https://aileague.aws.dev https://beta.aileague.aws.dev;`,
+ 			'worker-src \'self\' data: blob:;',
+ 			'style-src \'self\' \'unsafe-inline\';',
+ 			'connect-src \'self\' ws: wss: https://main.vscode-cdn.net http://localhost:* https://localhost:* https://login.microsoftonline.com/ https://update.code.visualstudio.com https://*.vscode-unpkg.net/ https://default.exp-tas.com/vscode/ab https://vscode-sync.trafficmanager.net https://vscode-sync-insiders.trafficmanager.net https://*.gallerycdn.vsassets.io https://marketplace.visualstudio.com https://openvsxorg.blob.core.windows.net https://az764295.vo.msecnd.net  https://code.visualstudio.com https://*.gallery.vsassets.io https://*.rel.tunnels.api.visualstudio.com wss://*.rel.tunnels.api.visualstudio.com https://*.servicebus.windows.net/ https://vscode.blob.core.windows.net https://vscode.search.windows.net https://vsmarketplacebadges.dev https://vscode.download.prss.microsoft.com https://download.visualstudio.microsoft.com https://*.vscode-unpkg.net https://open-vsx.org;',
