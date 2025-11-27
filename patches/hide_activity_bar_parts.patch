@@ -45,23 +45,6 @@ Index: sagemaker-code-editor/vscode/src/vs/workbench/services/userDataProfile/br
  		if (storageKeys.length) {
  			const storageEntries: Array<IStorageEntry> = [];
  			for (const key of storageKeys) {
-@@ -53,8 +81,6 @@ export class GlobalStateResource impleme
- 	}
- 
- 	async apply(content: string, profile: IUserDataProfile): Promise<void> {
--		console.log('globalState profile:', profile);
--		console.log('globalState content:', content);
- 		const globalState: IGlobalState = JSON.parse(content);
- 		await this.writeGlobalState(globalState, profile);
- 	}
-@@ -72,7 +98,6 @@ export class GlobalStateResource impleme
- 
- 	private async writeGlobalState(globalState: IGlobalState, profile: IUserDataProfile): Promise<void> {
- 		const storageKeys = Object.keys(globalState.storage);
--		console.log('global state:', profile);
- 		if (storageKeys.length) {
- 			const updatedStorage = new Map<string, string | undefined>();
- 			const nonProfileKeys = [
 Index: sagemaker-code-editor/vscode/src/vs/workbench/browser/parts/paneCompositeBar.ts
 ===================================================================
 --- sagemaker-code-editor.orig/vscode/src/vs/workbench/browser/parts/paneCompositeBar.ts
