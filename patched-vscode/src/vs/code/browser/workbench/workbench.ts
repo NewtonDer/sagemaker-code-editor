@@ -480,7 +480,9 @@ class WorkspaceProvider implements IWorkspaceProvider {
 
 		// Preserve origin query parameter if it exists
 		const urlParams = new URLSearchParams(mainWindow.location.search);
+		console.log('createTargetUrl mainWindow.location.search: ', mainWindow.location.search);
 		const originParam = urlParams.get('origin');
+		console.log('createTargetUrl originParam: ', originParam);
 
 		// Empty
 		let targetHref: string | undefined = undefined;
@@ -501,6 +503,7 @@ class WorkspaceProvider implements IWorkspaceProvider {
 		}
 
 		// Append origin parameter if it exists
+		console.log('createTargetUrl targetHref: ', targetHref);
 		if (originParam && targetHref) {
 			targetHref += `&origin=${originParam}`;
 		}

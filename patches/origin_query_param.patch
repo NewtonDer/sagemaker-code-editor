@@ -2,22 +2,25 @@ Index: sagemaker-code-editor/vscode/src/vs/code/browser/workbench/workbench.ts
 ===================================================================
 --- sagemaker-code-editor.orig/vscode/src/vs/code/browser/workbench/workbench.ts
 +++ sagemaker-code-editor/vscode/src/vs/code/browser/workbench/workbench.ts
-@@ -478,6 +478,10 @@ class WorkspaceProvider implements IWork
+@@ -478,6 +478,12 @@ class WorkspaceProvider implements IWork
  
  	private createTargetUrl(workspace: IWorkspace, options?: { reuse?: boolean; payload?: object }): string | undefined {
  
 +		// Preserve origin query parameter if it exists
 +		const urlParams = new URLSearchParams(mainWindow.location.search);
++		console.log('createTargetUrl mainWindow.location.search: ', mainWindow.location.search);
 +		const originParam = urlParams.get('origin');
++		console.log('createTargetUrl originParam: ', originParam);
 +
  		// Empty
  		let targetHref: string | undefined = undefined;
  		if (!workspace) {
-@@ -496,6 +500,11 @@ class WorkspaceProvider implements IWork
+@@ -496,6 +502,12 @@ class WorkspaceProvider implements IWork
  			targetHref = `${document.location.origin}${document.location.pathname}?${WorkspaceProvider.QUERY_PARAM_WORKSPACE}=${queryParamWorkspace}`;
  		}
  
 +		// Append origin parameter if it exists
++		console.log('createTargetUrl targetHref: ', targetHref);
 +		if (originParam && targetHref) {
 +			targetHref += `&origin=${originParam}`;
 +		}
