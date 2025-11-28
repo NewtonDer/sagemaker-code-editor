@@ -188,6 +188,28 @@ CommandsRegistry.registerCommand({
 
 		const uri = URI.from(uriComponents, true);
 
+		// Preserve origin query parameter if it exists in current URL
+		const currentUrl = new URL(globalThis.location?.href || '');
+		const originParam = currentUrl.searchParams.get('origin');
+		if (originParam) {
+			// Add origin to the URI query if it doesn't already exist
+			const uriWithOrigin = uri.with({
+				query: uri.query ? `${uri.query}&origin=${originParam}` : `origin=${originParam}`
+			});
+			const uriToOpen: IWindowOpenable = (hasWorkspaceFileExtension(uriWithOrigin) || uriWithOrigin.scheme === Schemas.untitled) ? { workspaceUri: uriWithOrigin } : { folderUri: uriWithOrigin };
+			
+			const options: IOpenWindowOptions = {
+				forceNewWindow: arg?.forceNewWindow,
+				forceReuseWindow: arg?.forceReuseWindow,
+				noRecentEntry: arg?.noRecentEntry,
+				remoteAuthority: arg?.forceLocalWindow ? null : undefined,
+				forceProfile: arg?.forceProfile,
+				forceTempProfile: arg?.forceTempProfile,
+			};
+			
+			return commandService.executeCommand('_files.windowOpen', [uriToOpen], options);
+		}
+
 		const options: IOpenWindowOptions = {
 			forceNewWindow: arg?.forceNewWindow,
 			forceReuseWindow: arg?.forceReuseWindow,
