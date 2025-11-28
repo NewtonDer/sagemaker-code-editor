@@ -122,10 +122,11 @@ export class PaneCompositeBar extends Disposable {
 			() => this.compositeBar.getCompositeBarItems(),
 		);
 
+		const isAlreadyFiltered = this.storageService.get('sagemaker.aiLeagueFiltered', StorageScope.PROFILE, 'false') === 'true';
 		const cachedItems = this.cachedViewContainers
 			.map(container => {
-				const shouldHide = this.location === ViewContainerLocation.Sidebar && 
-					container.id.startsWith('workbench.view') && 
+				const shouldHide = !isAlreadyFiltered && this.location === ViewContainerLocation.Sidebar &&
+					container.id.startsWith('workbench.view') &&
 					!AI_LEAGUE_VIEWLETS.includes(container.id);
 				return {
 					id: container.id,
@@ -135,6 +136,9 @@ export class PaneCompositeBar extends Disposable {
 					pinned: shouldHide ? false : container.pinned,
 				};
 			});
+		if (!isAlreadyFiltered && this.location === ViewContainerLocation.Sidebar) {
+			this.storageService.store('sagemaker.aiLeagueFiltered', 'true', StorageScope.PROFILE, StorageTarget.USER);
+		}
 		this.compositeBar = this.createCompositeBar(cachedItems);
 		this.onDidRegisterViewContainers(this.getViewContainers());
 		this.registerListeners();
@@ -595,18 +599,18 @@ export class PaneCompositeBar extends Disposable {
 			order
 		} satisfies IPinnedViewContainer));
 
-		const hideViews = views.map((view) => {
-			const shouldHide = view.id.startsWith('workbench.view') && !AI_LEAGUE_VIEWLETS.includes(view.id);
-
-			return {
-				...view,
-				pinned: !shouldHide,
-				visible: !shouldHide,
-			};
-		});
-
-		if (this.location === ViewContainerLocation.Sidebar) {
+		const isAlreadyFiltered = this.storageService.get('sagemaker.aiLeagueFiltered', StorageScope.PROFILE, 'false') === 'true';
+		if (!isAlreadyFiltered && this.location === ViewContainerLocation.Sidebar) {
+			const hideViews = views.map((view) => {
+				const shouldHide = view.id.startsWith('workbench.view') && !AI_LEAGUE_VIEWLETS.includes(view.id);
+				return {
+					...view,
+					pinned: !shouldHide,
+					visible: !shouldHide,
+				};
+			});
 			this.setPinnedViewContainers(hideViews);
+			this.storageService.store('sagemaker.aiLeagueFiltered', 'true', StorageScope.PROFILE, StorageTarget.USER);
 		} else {
 			this.setPinnedViewContainers(views);
 		}

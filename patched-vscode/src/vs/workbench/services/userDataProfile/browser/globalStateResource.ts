@@ -42,17 +42,24 @@ export class GlobalStateResourceInitializer implements IProfileResourceInitializ
 
 	async initialize(content: string): Promise<void> {
 		const globalState: IGlobalState = JSON.parse(content);
-		const pinnedViewlets = JSON.parse(globalState.storage['workbench.activity.pinnedViewlets2']);
 
-		const newPinnedViewlets = pinnedViewlets.map((viewlet: IViewlet) => (
-			{
-				...viewlet,
-				pinned: AI_LEAGUE_VIEWLETS.includes(viewlet.id),
-				visible: viewlet.id === VIEWLET_AWSTOOLKIT,
-			}
-		));
+		// Check if AI League filtering has already been applied
+		if (globalState.storage['sagemaker.aiLeagueFiltered'] === 'true') {
+			// Skip filtering if already applied
+		} else {
+			const pinnedViewlets = JSON.parse(globalState.storage['workbench.activity.pinnedViewlets2']);
 
-		globalState.storage['workbench.activity.pinnedViewlets2'] = JSON.stringify(newPinnedViewlets);
+			const newPinnedViewlets = pinnedViewlets.map((viewlet: IViewlet) => (
+				{
+					...viewlet,
+					pinned: AI_LEAGUE_VIEWLETS.includes(viewlet.id),
+					visible: viewlet.id === VIEWLET_AWSTOOLKIT,
+				}
+			));
+
+			globalState.storage['workbench.activity.pinnedViewlets2'] = JSON.stringify(newPinnedViewlets);
+			globalState.storage['sagemaker.aiLeagueFiltered'] = 'true';
+		}
 
 		const storageKeys = Object.keys(globalState.storage);
 
