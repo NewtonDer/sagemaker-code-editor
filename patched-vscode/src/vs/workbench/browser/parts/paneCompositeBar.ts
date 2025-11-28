@@ -123,13 +123,18 @@ export class PaneCompositeBar extends Disposable {
 		);
 
 		const cachedItems = this.cachedViewContainers
-			.map(container => ({
-				id: container.id,
-				name: container.name,
-				visible: !this.shouldBeHidden(container.id, container),
-				order: container.order,
-				pinned: container.pinned,
-			}));
+			.map(container => {
+				const shouldHide = this.location === ViewContainerLocation.Sidebar && 
+					container.id.startsWith('workbench.view') && 
+					!AI_LEAGUE_VIEWLETS.includes(container.id);
+				return {
+					id: container.id,
+					name: container.name,
+					visible: shouldHide ? false : !this.shouldBeHidden(container.id, container),
+					order: container.order,
+					pinned: shouldHide ? false : container.pinned,
+				};
+			});
 		this.compositeBar = this.createCompositeBar(cachedItems);
 		this.onDidRegisterViewContainers(this.getViewContainers());
 		this.registerListeners();

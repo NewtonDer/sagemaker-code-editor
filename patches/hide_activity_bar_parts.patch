@@ -61,7 +61,33 @@ Index: sagemaker-code-editor/vscode/src/vs/workbench/browser/parts/paneComposite
  export class PaneCompositeBar extends Disposable {
  
  	private readonly viewContainerDisposables = this._register(new DisposableMap<string, IDisposable>());
-@@ -578,12 +583,28 @@ export class PaneCompositeBar extends Di
+@@ -118,13 +123,18 @@ export class PaneCompositeBar extends Di
+ 		);
+ 
+ 		const cachedItems = this.cachedViewContainers
+-			.map(container => ({
+-				id: container.id,
+-				name: container.name,
+-				visible: !this.shouldBeHidden(container.id, container),
+-				order: container.order,
+-				pinned: container.pinned,
+-			}));
++			.map(container => {
++				const shouldHide = this.location === ViewContainerLocation.Sidebar && 
++					container.id.startsWith('workbench.view') && 
++					!AI_LEAGUE_VIEWLETS.includes(container.id);
++				return {
++					id: container.id,
++					name: container.name,
++					visible: shouldHide ? false : !this.shouldBeHidden(container.id, container),
++					order: container.order,
++					pinned: shouldHide ? false : container.pinned,
++				};
++			});
+ 		this.compositeBar = this.createCompositeBar(cachedItems);
+ 		this.onDidRegisterViewContainers(this.getViewContainers());
+ 		this.registerListeners();
+@@ -578,12 +588,28 @@ export class PaneCompositeBar extends Di
  
  	private storeCachedViewContainersState(cachedViewContainers: ICachedViewContainer[]): void {
  		const pinnedViewContainers = this.getPinnedViewContainers();
