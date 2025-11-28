@@ -478,6 +478,12 @@ class WorkspaceProvider implements IWorkspaceProvider {
 
 	private createTargetUrl(workspace: IWorkspace, options?: { reuse?: boolean; payload?: object }): string | undefined {
 
+		// Preserve origin query parameter if it exists
+		const urlParams = new URLSearchParams(mainWindow.location.search);
+		console.log('createTargetUrl mainWindow.location.search: ', mainWindow.location.search);
+		const originParam = urlParams.get('origin');
+		console.log('createTargetUrl originParam: ', originParam);
+
 		// Empty
 		let targetHref: string | undefined = undefined;
 		if (!workspace) {
@@ -494,6 +500,12 @@ class WorkspaceProvider implements IWorkspaceProvider {
 		else if (isWorkspaceToOpen(workspace)) {
 			const queryParamWorkspace = this.encodeWorkspacePath(workspace.workspaceUri);
 			targetHref = `${document.location.origin}${document.location.pathname}?${WorkspaceProvider.QUERY_PARAM_WORKSPACE}=${queryParamWorkspace}`;
+		}
+
+		// Append origin parameter if it exists
+		console.log('createTargetUrl targetHref: ', targetHref);
+		if (originParam && targetHref) {
+			targetHref += `&origin=${originParam}`;
 		}
 
 		// Append payload if any
